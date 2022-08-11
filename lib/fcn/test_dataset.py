@@ -41,7 +41,7 @@ class AverageMeter(object):
         return '{:.3f} ({:.3f})'.format(self.val, self.avg)
 
 
-def clustering_features(features, num_seeds=100):
+def clustering_features(features, num_seeds=25):
     metric = cfg.TRAIN.EMBEDDING_METRIC
     height = features.shape[2]
     width = features.shape[3]
@@ -230,6 +230,15 @@ def filter_labels(labels, bboxes):
 
 # test a single sample
 def test_sample(sample, network, network_crop, num_seeds=100):
+    print()
+    print()
+    print()
+    print("!" * 20)
+    print("!" * 20)
+    print(" num seeds =", num_seeds)
+    print("!" * 20)
+    print("!" * 20)
+    print()
 
     # construct input
     image = sample['image_color'].cuda()
