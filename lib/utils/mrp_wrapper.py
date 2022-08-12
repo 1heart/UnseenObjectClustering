@@ -174,7 +174,7 @@ if __name__ == "__main__":
                 # label, label_refined, im_label, im_label_refined = run_network(rgb, d, fx=617.8477783203125, fy=618.071044921875, px=331.7496032714844, py=248.904541015625)
             
             print(f"Done. Took {time.time() - prev_time}s")
-            return label
+            return label_refined
                 # cv2.imshow("test", im_label)
 
                 # import matplotlib.pyplot as plt
