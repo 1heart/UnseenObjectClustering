@@ -109,7 +109,7 @@ if __name__ == "__main__":
     network_crop = torch.nn.DataParallel(network_crop, device_ids=[cfg.gpu_id]).cuda(device=cfg.device)
     network_crop.eval()
 
-    def run_network(im_color, depth_img, fx, fy, px, py):
+    def run_network(im_color, xyz_img):
         im = im_color.astype(np.float32)
         im_tensor = torch.from_numpy(im) / 255.0
         pixel_mean = torch.tensor(cfg.PIXEL_MEANS / 255.0).float()
@@ -119,11 +119,11 @@ if __name__ == "__main__":
 
         height = im_color.shape[0]
         width = im_color.shape[1]
-        xyz_img = compute_xyz(depth_img, fx, fy, px, py, height, width)
+        # xyz_img = compute_xyz(depth_img, fx, fy, px, py, height, width)
         depth_blob = torch.from_numpy(xyz_img).permute(2, 0, 1)
         sample['depth'] = depth_blob.unsqueeze(0)
 
-        out_label, out_label_refined = test_sample(sample, network, network_crop, num_seeds=50)
+        out_label, out_label_refined = test_sample(sample, network, network_crop, num_seeds=100)
 
         # publish segmentation mask
         label = out_label[0].cpu().numpy()
@@ -163,16 +163,18 @@ if __name__ == "__main__":
     class RgbdServer(SegmentationServer):
         def _get_segmentations(self, rgbd):
             rgb = rgbd[:, :, :3].astype(np.uint8)
-            d = (rgbd[:, :, 3] / 1000.).astype(np.float32)
+            # d = (rgbd[:, :, 3] / 1000.).astype(np.float32)
+            xyz = rgbd[:, :, 3:].astype(np.float32)
 
             print("Running segmentation network...")
             prev_time = time.time()
 
             with torch.no_grad():
-                label, label_refined, im_label, im_label_refined = run_network(rgb, d, fx=617.8477783203125, fy=618.071044921875, px=331.7496032714844, py=248.904541015625)
+                label, label_refined, im_label, im_label_refined = run_network(rgb, xyz)
+                # label, label_refined, im_label, im_label_refined = run_network(rgb, d, fx=617.8477783203125, fy=618.071044921875, px=331.7496032714844, py=248.904541015625)
             
             print(f"Done. Took {time.time() - prev_time}s")
-            return label
+            return label_refined
                 # cv2.imshow("test", im_label)
 
                 # import matplotlib.pyplot as plt
